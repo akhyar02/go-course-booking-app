@@ -12,7 +12,7 @@
   <div class="carousel-inner">
     <div class="carousel-item active">
       <img
-        src="static/images/woman-laptop.png"
+        src="/static/images/woman-laptop.png"
         class="d-block w-100"
         alt="Woman and laptop"
       />
@@ -23,7 +23,7 @@
     </div>
     <div class="carousel-item">
       <img
-        src="static/images/tray.png"
+        src="/static/images/tray.png"
         class="d-block w-100"
         alt="Tray with coffee"
       />
@@ -34,7 +34,7 @@
     </div>
     <div class="carousel-item">
       <img
-        src="static/images/outside.png"
+        src="/static/images/outside.png"
         class="d-block w-100"
         alt="Outside"
       />
