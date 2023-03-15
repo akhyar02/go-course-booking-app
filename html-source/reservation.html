@@ -92,6 +92,7 @@
             method="post"
             novalidate
             class="needs-validation"
+            id="reservation_form"
           >
             <input type="hidden" name="csrf_token" value="{{.CSRFToken}}" />
             <div class="row">
@@ -132,6 +133,10 @@
             <button type="submit" class="btn btn-primary">
               Search Availability
             </button>
+
+            <div class="invalid-feedback">
+              Please provide a valid starting and ending date.
+            </div>
           </form>
         </div>
       </div>
@@ -157,5 +162,7 @@
       integrity="sha384-Piv4xVNRyMGpqkS2by6br4gNJ7DXjqk09RmUpJ8jgGtD7zP9yug3goQfGII0yAns"
       crossorigin="anonymous"
     ></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="./reservation.js"></script>
   </body>
 </html>
