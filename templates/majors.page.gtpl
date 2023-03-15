@@ -43,7 +43,7 @@
     <div class="col text-center">
       <a
         id="check-availability-button"
-        href="/make-reservation-ms"
+        href="/search-availability?room=major-suites"
         class="btn btn-success"
         >Check Availability</a
       >

@@ -44,7 +44,7 @@
     <div class="col text-center">
       <a
         id="check-availability-button"
-        href="/make-reservation-gq"
+        href="/search-availability?room=general-quarters"
         class="btn btn-success"
         >Check Availability</a
       >

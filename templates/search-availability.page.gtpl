@@ -13,6 +13,20 @@
         class="needs-validation"
         id="reservation_form"
       >
+        <div class="form-group">
+          <label for="room_type">Room Type</label>
+          <select
+            class="form-control"
+            id="room_type"
+            name="room_type"
+            required
+          >
+            <option value=null>Select Room Type</option>
+            <option value="generalQuarters" {{
+              if eq .Data.roomType "general-quarters" }}selected{{end}}>General Quarters</option>
+            <option value="majorSuites" {{
+              if eq .Data.roomType "major-suites" }}selected{{end}}>Major Suites </option>
+          </select>
         <input type="hidden" name="csrf_token" value="{{.CSRFToken}}" />
         <div class="row">
           <div class="col">
@@ -112,6 +126,13 @@ async function checkAvailability(url = "", data = {}) {
 
 async function handleSubmit(e){
   e.preventDefault();
+  if (roomTypeInput.value === "null") {
+    roomTypeInput.classList.add("is-invalid");
+    document.querySelector(".invalid-feedback").style.display = "none";
+    return;
+  } else {
+    roomTypeInput.classList.remove("is-invalid");
+  }
   if (
     !validateInput(startDateInput) ||
     !validateInput(endDateInput) ||
@@ -151,6 +172,7 @@ async function handleSubmit(e){
 const reservationForm = document.getElementById("reservation_form");
 const startDateInput = document.getElementById("start_date");
 const endDateInput = document.getElementById("end_date");
+const roomTypeInput = document.getElementById("room_type");
 reservationForm.onsubmit = handleSubmit
 </script>
 

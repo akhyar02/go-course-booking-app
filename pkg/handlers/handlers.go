@@ -53,7 +53,13 @@ func (rp *Repository) MakeReservation(w http.ResponseWriter, r *http.Request) {
 
 // SearchAvailability is the search-availability page handler
 func (rp *Repository) SearchAvailability(w http.ResponseWriter, r *http.Request) {
-	render.RenderTemplate(w, "search-availability.page.gtpl", &models.TemplateData{})
+	var urlQuery = r.URL.Query()
+	var roomType = urlQuery.Get("room")
+	render.RenderTemplate(w, "search-availability.page.gtpl", &models.TemplateData{
+		Data: map[string]interface{}{
+			"roomType": roomType,
+		},
+	})
 }
 
 // ContactUs is the contact-us page handler
