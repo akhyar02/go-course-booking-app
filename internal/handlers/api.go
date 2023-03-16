@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"net/http"
 
-	"github.com/akhyar02/bookings/pkg/config"
+	"github.com/akhyar02/bookings/internal/config"
 )
 
 type reservationApiHandler struct {

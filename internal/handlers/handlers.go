@@ -3,9 +3,9 @@ package handlers
 import (
 	"net/http"
 
-	"github.com/akhyar02/bookings/pkg/config"
-	"github.com/akhyar02/bookings/pkg/models"
-	"github.com/akhyar02/bookings/pkg/render"
+	"github.com/akhyar02/bookings/internal/config"
+	"github.com/akhyar02/bookings/internal/models"
+	"github.com/akhyar02/bookings/internal/render"
 )
 
 type Repository struct {
