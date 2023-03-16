@@ -37,6 +37,7 @@ func main() {
 	config.TestConf.TemplateCache = tc
 	repo := handlers.NewRepository(&app)
 	handlers.NewHandlers(repo)
+	handlers.NewReservationHandler(app)
 
 	render.NewTemplates(&app)
 

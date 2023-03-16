@@ -28,13 +28,18 @@ func routes(app *config.AppConfig) http.Handler {
 	fileServer := http.FileServer(http.Dir("./static/"))
 	mux.Handle("/static/*", http.StripPrefix("/static", fileServer))
 
-	mux.Get("/", http.HandlerFunc(handlers.Repo.Home))
-	mux.Get("/about", http.HandlerFunc(handlers.Repo.About))
-	mux.Get("/contact-us", http.HandlerFunc(handlers.Repo.ContactUs))
-	mux.Get("/general-quarters", http.HandlerFunc(handlers.Repo.GeneralQuarters))
-	mux.Get("/major-suites", http.HandlerFunc(handlers.Repo.MajorSuites))
-	mux.Get("/search-availability", http.HandlerFunc(handlers.Repo.SearchAvailability))
-	mux.Get("/make-reservation", http.HandlerFunc(handlers.Repo.MakeReservation))
+	mux.Get("/", handlers.Repo.Home)
+	mux.Get("/about", handlers.Repo.About)
+	mux.Get("/contact-us", handlers.Repo.ContactUs)
+	mux.Get("/general-quarters", handlers.Repo.GeneralQuarters)
+	mux.Get("/major-suites", handlers.Repo.MajorSuites)
+	mux.Get("/search-availability", handlers.Repo.SearchAvailability)
+	mux.Get("/make-reservation", handlers.Repo.MakeReservation)
+
+	mux.Route("/api", func(r chi.Router) {
+		r.Get("/reservations", handlers.ReservationApi.GetReservationByDate)
+		// r.Post("/reservations", handlers.ReservationApi.GetReservationByDate)
+	})
 
 	return mux
 }
