@@ -8,7 +8,6 @@
       <h1 class="mt-3">Search for Availability</h1>
 
       <form
-        method="post"
         novalidate
         class="needs-validation"
         id="reservation_form"
@@ -104,16 +103,16 @@ function validateDate(startDate, endDate) {
 }
 
 async function checkAvailability(url = "", data = {}) {
-  return {
-    error: false,
-    message: "Success",
-  }
-  const response = await fetch(url, {
-    method: "POST",
+  // return {
+  //   error: false,
+  //   message: "Success",
+  // }
+  const query = `?startDate=${data.startDate}&endDate=${data.endDate}`
+  const response = await fetch(url+query, {
+    method: "GET",
     headers: {
       "Content-Type": "application/json",
-    },
-    body: JSON.stringify(data),
+    }
   });
   if (!response.ok) {
     return {
@@ -146,9 +145,9 @@ async function handleSubmit(e){
     return;
   }
 
-  const responseData = await checkAvailability("/api/reservation", {
-    start_date: startDateInput.value,
-    end_date: endDateInput.value,
+  const responseData = await checkAvailability("/api/reservations", {
+    startDate: startDateInput.value,
+    endDate: endDateInput.value,
   });
   if (responseData.error) {
     Swal.fire({
