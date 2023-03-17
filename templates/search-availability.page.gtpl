@@ -163,7 +163,7 @@ async function handleSubmit(e){
     icon: "success",
     confirmButtonText: "Make reservation",
     preConfirm: () => {
-      window.location.href = "/make-reservation";
+      window.location.href = "/make-reservation?" + "startDate=" + responseData.startDate + "&endDate=" + responseData.endDate + "&roomType=" + responseData.roomType;
     },
   });
 }

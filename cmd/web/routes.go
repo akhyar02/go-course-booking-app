@@ -38,7 +38,7 @@ func routes(app *config.AppConfig) http.Handler {
 
 	mux.Route("/api", func(r chi.Router) {
 		r.Get("/reservations", handlers.ReservationApi.GetReservationByDate)
-		// r.Post("/reservations", handlers.ReservationApi.GetReservationByDate)
+		r.Post("/reservations", handlers.ReservationApi.CreateReservation)
 	})
 
 	return mux

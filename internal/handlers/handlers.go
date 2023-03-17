@@ -48,7 +48,17 @@ func (rp *Repository) MajorSuites(w http.ResponseWriter, r *http.Request) {
 
 // MakeReservation is the make-reservation page handler
 func (rp *Repository) MakeReservation(w http.ResponseWriter, r *http.Request) {
-	render.RenderTemplate(w, r, "make-reservation.page.gtpl", &models.TemplateData{})
+	var urlQuery = r.URL.Query()
+	var roomType = urlQuery.Get("roomType")
+	var startDate = urlQuery.Get("startDate")
+	var endDate = urlQuery.Get("endDate")
+	render.RenderTemplate(w, r, "make-reservation.page.gtpl", &models.TemplateData{
+		Data: map[string]interface{}{
+			"roomType":  roomType,
+			"startDate": startDate,
+			"endDate":   endDate,
+		},
+	})
 }
 
 // SearchAvailability is the search-availability page handler
