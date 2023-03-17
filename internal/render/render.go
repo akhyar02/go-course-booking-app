@@ -24,6 +24,8 @@ func addDefaultData(td *models.TemplateData, r *http.Request) *models.TemplateDa
 	return td
 }
 
+var pathToTemplate = "./templates/"
+
 func RenderTemplate(w http.ResponseWriter, r *http.Request, tmpl string, td *models.TemplateData) {
 	var tc map[string]*template.Template
 	var err error
@@ -65,7 +67,7 @@ func RenderTemplate(w http.ResponseWriter, r *http.Request, tmpl string, td *mod
 func CreateTemplateCache() (map[string]*template.Template, error) {
 	tc := make(map[string]*template.Template)
 
-	templateFiles, err := filepath.Glob("./templates/*.page.gtpl")
+	templateFiles, err := filepath.Glob(pathToTemplate + "*.page.gtpl")
 	if err != nil {
 		log.Println("Error reading page files:", err)
 		return nil, err
@@ -79,13 +81,13 @@ func CreateTemplateCache() (map[string]*template.Template, error) {
 			return nil, err
 		}
 
-		layoutFiles, err := filepath.Glob("./templates/*.layout.gtpl")
+		layoutFiles, err := filepath.Glob(pathToTemplate + "*.layout.gtpl")
 		if err != nil {
 			log.Println("Error reading layout files:", err)
 			return nil, err
 		}
 		if len(layoutFiles) > 0 {
-			pTmpl, err = pTmpl.ParseGlob("./templates/*.layout.gtpl")
+			pTmpl, err = pTmpl.ParseGlob(pathToTemplate + "*.layout.gtpl")
 			if err != nil {
 				log.Println("Error parsing layout glob:", err)
 				return nil, err

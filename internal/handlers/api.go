@@ -42,7 +42,6 @@ func (h *reservationApiHandler) GetReservationByDate(w http.ResponseWriter, r *h
 		StartDate: startDate,
 		EndDate:   endDate,
 	})
-	fmt.Println(startDate, endDate)
 	fmt.Fprint(w, string(jsonResponse))
 }
 
@@ -115,15 +114,21 @@ func (h *reservationApiHandler) CreateReservation(w http.ResponseWriter, r *http
 		errors["phone"] = append(errors["phone"], "phone is required")
 	}
 
+	if len(errors) > 0 {
+		w.WriteHeader(http.StatusBadRequest)
+	} else {
+		w.WriteHeader(http.StatusCreated)
+	}
+
 	reservation := models.Reservation{
 		FirstName: requestBody.FirstName,
 		LastName:  requestBody.LastName,
 		Email:     requestBody.Email,
 		Phone:     requestBody.Phone,
 		RoomID:    1,
-		RoomType:  "general_quarters",
-		StartDate: "2021-01-01",
-		EndDate:   "2021-01-02",
+		RoomType:  requestBody.RoomType,
+		StartDate: requestBody.StartDate,
+		EndDate:   requestBody.EndDate,
 	}
 
 	var responseData = struct {
@@ -136,6 +141,5 @@ func (h *reservationApiHandler) CreateReservation(w http.ResponseWriter, r *http
 
 	h.appConfig.Session.Put(r.Context(), "reservation", reservation)
 	jsonResponse, _ := json.Marshal(responseData)
-	w.WriteHeader(http.StatusCreated)
 	fmt.Fprint(w, string(jsonResponse))
 }
