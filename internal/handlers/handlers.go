@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"log"
 	"net/http"
 
 	"github.com/akhyar02/bookings/internal/config"
@@ -75,4 +76,25 @@ func (rp *Repository) SearchAvailability(w http.ResponseWriter, r *http.Request)
 // ContactUs is the contact-us page handler
 func (rp *Repository) ContactUs(w http.ResponseWriter, r *http.Request) {
 	render.RenderTemplate(w, r, "contact-us.page.gtpl", &models.TemplateData{})
+}
+
+// ReservationSummary is the reservation-summary page handler
+func (rp *Repository) ReservationSummary(w http.ResponseWriter, r *http.Request) {
+	reservation, ok := rp.app.Session.Get(r.Context(), "reservation").(models.Reservation)
+	if !ok {
+		log.Println("Type error")
+		http.Redirect(w, r, "/make-reservation", http.StatusTemporaryRedirect)
+		return
+	}
+	render.RenderTemplate(w, r, "reservation-summary.page.gtpl", &models.TemplateData{
+		Data: map[string]interface{}{
+			"roomType":  reservation.RoomType,
+			"startDate": reservation.StartDate,
+			"endDate":   reservation.EndDate,
+			"firstName": reservation.FirstName,
+			"lastName":  reservation.LastName,
+			"email":     reservation.Email,
+			"phone":     reservation.Phone,
+		},
+	})
 }

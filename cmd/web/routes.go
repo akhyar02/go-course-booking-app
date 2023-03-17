@@ -35,6 +35,7 @@ func routes(app *config.AppConfig) http.Handler {
 	mux.Get("/major-suites", handlers.Repo.MajorSuites)
 	mux.Get("/search-availability", handlers.Repo.SearchAvailability)
 	mux.Get("/make-reservation", handlers.Repo.MakeReservation)
+	mux.Get("/reservation-summary", handlers.Repo.ReservationSummary)
 
 	mux.Route("/api", func(r chi.Router) {
 		r.Get("/reservations", handlers.ReservationApi.GetReservationByDate)

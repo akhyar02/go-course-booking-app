@@ -115,22 +115,26 @@ func (h *reservationApiHandler) CreateReservation(w http.ResponseWriter, r *http
 		errors["phone"] = append(errors["phone"], "phone is required")
 	}
 
+	reservation := models.Reservation{
+		FirstName: requestBody.FirstName,
+		LastName:  requestBody.LastName,
+		Email:     requestBody.Email,
+		Phone:     requestBody.Phone,
+		RoomID:    1,
+		RoomType:  "general_quarters",
+		StartDate: "2021-01-01",
+		EndDate:   "2021-01-02",
+	}
+
 	var responseData = struct {
 		Errors map[string][]string `json:"errors"`
 		Data   models.Reservation  `json:"data"`
 	}{
 		Errors: errors,
-		Data: models.Reservation{
-			FirstName: requestBody.FirstName,
-			LastName:  requestBody.LastName,
-			Email:     requestBody.Email,
-			Phone:     requestBody.Phone,
-			RoomID:    1,
-			RoomType:  "general_quarters",
-			StartDate: "2021-01-01",
-			EndDate:   "2021-01-02",
-		},
+		Data:   reservation,
 	}
+
+	h.appConfig.Session.Put(r.Context(), "reservation", reservation)
 	jsonResponse, _ := json.Marshal(responseData)
 	w.WriteHeader(http.StatusCreated)
 	fmt.Fprint(w, string(jsonResponse))

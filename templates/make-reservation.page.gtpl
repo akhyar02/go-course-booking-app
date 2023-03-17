@@ -171,7 +171,10 @@
                       inputField.parentNode.removeChild(inputField.parentNode.lastChild)
                     }
                   })
+                  return
                 }
+
+                return window.location.href ="/reservation-summary"
               },
               false
             );
