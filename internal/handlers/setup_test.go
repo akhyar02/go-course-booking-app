@@ -9,6 +9,7 @@ import (
 	"time"
 
 	"github.com/akhyar02/bookings/internal/config"
+	"github.com/akhyar02/bookings/internal/helpers"
 	"github.com/akhyar02/bookings/internal/models"
 	"github.com/akhyar02/bookings/internal/render"
 	_ "github.com/akhyar02/bookings/testing-setup"
@@ -29,6 +30,10 @@ func getRoutes() http.Handler {
 	app.InProduction = false
 	app.UseCache = false
 	gob.Register(models.Reservation{})
+	infoLog := log.New(os.Stdout, "INFO\t", log.Ldate|log.Ltime)
+	errorLog := log.New(os.Stdout, "ERROR\t", log.Ldate|log.Ltime|log.Lshortfile)
+	app.ErrorLog = errorLog
+	app.InfoLog = infoLog
 
 	session = scs.New()
 	session.Lifetime = 24 * time.Hour
@@ -46,6 +51,7 @@ func getRoutes() http.Handler {
 	app.TemplateCache = tc
 	config.TestConf.TemplateCache = tc
 	repo := NewRepository(&app)
+	helpers.NewHelpers(&app)
 	NewHandlers(repo)
 	NewReservationHandler(app)
 	render.NewTemplates(&app)
