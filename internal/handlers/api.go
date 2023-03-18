@@ -10,6 +10,7 @@ import (
 	"time"
 
 	"github.com/akhyar02/bookings/internal/config"
+	"github.com/akhyar02/bookings/internal/helpers"
 	"github.com/akhyar02/bookings/internal/models"
 )
 
@@ -58,7 +59,8 @@ func (h *reservationApiHandler) CreateReservation(w http.ResponseWriter, r *http
 	}
 	err := json.NewDecoder(r.Body).Decode(&requestBody)
 	if err != nil {
-		fmt.Println(err)
+		helpers.ServerError(w, err)
+		return
 	}
 
 	if requestBody.RoomType == "" {

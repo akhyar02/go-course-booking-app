@@ -5,10 +5,12 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"os"
 	"time"
 
 	"github.com/akhyar02/bookings/internal/config"
 	"github.com/akhyar02/bookings/internal/handlers"
+	"github.com/akhyar02/bookings/internal/helpers"
 	"github.com/akhyar02/bookings/internal/models"
 	"github.com/akhyar02/bookings/internal/render"
 	"github.com/alexedwards/scs/v2"
@@ -18,10 +20,17 @@ const portNumber = 8080
 
 var app config.AppConfig
 var session *scs.SessionManager
+var infoLog *log.Logger
+var errorLog *log.Logger
 
 func main() {
 	app.InProduction = false
 	gob.Register(models.Reservation{})
+
+	infoLog = log.New(os.Stdout, "INFO\t", log.Ldate|log.Ltime)
+	errorLog = log.New(os.Stdout, "ERROR\t", log.Ldate|log.Ltime|log.Lshortfile)
+	app.ErrorLog = errorLog
+	app.InfoLog = infoLog
 
 	session = scs.New()
 	session.Lifetime = 24 * time.Hour
@@ -39,6 +48,7 @@ func main() {
 	app.TemplateCache = tc
 	config.TestConf.TemplateCache = tc
 	repo := handlers.NewRepository(&app)
+	helpers.NewHelpers(&app)
 	handlers.NewHandlers(repo)
 	handlers.NewReservationHandler(app)
 

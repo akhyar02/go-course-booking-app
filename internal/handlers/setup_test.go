@@ -62,7 +62,7 @@ func getRoutes() http.Handler {
 	mux.Use(middleware.Recoverer)
 	mux.Use(middleware.Logger)
 	// mux.Use(writeToConsole)
-	mux.Use(noSurf)
+	// mux.Use(noSurf)
 	mux.Use(sessionLoad)
 
 	fileServer := http.FileServer(http.Dir("./static/"))
