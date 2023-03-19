@@ -4,5 +4,5 @@ create_table("users") {
   t.Column("last_name", "string", {"default": ""})
   t.Column("email", "string", {})
   t.Column("password", "string", {"size":60})
-  t.Column("acess_level", "integer", {"default":1})
+  t.Column("access_level", "integer", {"default":1})
 }
