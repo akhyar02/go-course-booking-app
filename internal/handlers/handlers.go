@@ -5,19 +5,24 @@ import (
 	"net/http"
 
 	"github.com/akhyar02/bookings/internal/config"
+	"github.com/akhyar02/bookings/internal/driver"
 	"github.com/akhyar02/bookings/internal/models"
 	"github.com/akhyar02/bookings/internal/render"
+	"github.com/akhyar02/bookings/internal/repository"
+	"github.com/akhyar02/bookings/internal/repository/dbrepo"
 )
 
 type Repository struct {
 	app *config.AppConfig
+	db  repository.DatabaseRepo
 }
 
 var Repo *Repository
 
-func NewRepository(a *config.AppConfig) *Repository {
+func NewRepository(a *config.AppConfig, db *driver.DB) *Repository {
 	return &Repository{
 		app: a,
+		db:  dbrepo.NewPostgresRepo(db.SQL, a),
 	}
 }
 
@@ -27,24 +32,24 @@ func NewHandlers(r *Repository) {
 
 // Home is the home page handler
 func (rp *Repository) Home(w http.ResponseWriter, r *http.Request) {
-	render.RenderTemplate(w, r, "home.page.gtpl", &models.TemplateData{})
+	render.Template(w, r, "home.page.gtpl", &models.TemplateData{})
 }
 
 // About is the about page handler
 func (rp *Repository) About(w http.ResponseWriter, r *http.Request) {
 	stringMap := make(map[string]string)
 	stringMap["test"] = "Hello again"
-	render.RenderTemplate(w, r, "about.page.gtpl", &models.TemplateData{StringMap: stringMap})
+	render.Template(w, r, "about.page.gtpl", &models.TemplateData{StringMap: stringMap})
 }
 
 // GeneralQuarters is the general-quarters page handler
 func (rp *Repository) GeneralQuarters(w http.ResponseWriter, r *http.Request) {
-	render.RenderTemplate(w, r, "generals.page.gtpl", &models.TemplateData{})
+	render.Template(w, r, "generals.page.gtpl", &models.TemplateData{})
 }
 
 // MajorSuites is the major-suites page handler
 func (rp *Repository) MajorSuites(w http.ResponseWriter, r *http.Request) {
-	render.RenderTemplate(w, r, "majors.page.gtpl", &models.TemplateData{})
+	render.Template(w, r, "majors.page.gtpl", &models.TemplateData{})
 }
 
 // MakeReservation is the make-reservation page handler
@@ -53,7 +58,7 @@ func (rp *Repository) MakeReservation(w http.ResponseWriter, r *http.Request) {
 	var roomType = urlQuery.Get("roomType")
 	var startDate = urlQuery.Get("startDate")
 	var endDate = urlQuery.Get("endDate")
-	render.RenderTemplate(w, r, "make-reservation.page.gtpl", &models.TemplateData{
+	render.Template(w, r, "make-reservation.page.gtpl", &models.TemplateData{
 		Data: map[string]interface{}{
 			"roomType":  roomType,
 			"startDate": startDate,
@@ -66,7 +71,7 @@ func (rp *Repository) MakeReservation(w http.ResponseWriter, r *http.Request) {
 func (rp *Repository) SearchAvailability(w http.ResponseWriter, r *http.Request) {
 	var urlQuery = r.URL.Query()
 	var roomType = urlQuery.Get("room")
-	render.RenderTemplate(w, r, "search-availability.page.gtpl", &models.TemplateData{
+	render.Template(w, r, "search-availability.page.gtpl", &models.TemplateData{
 		Data: map[string]interface{}{
 			"roomType": roomType,
 		},
@@ -75,7 +80,7 @@ func (rp *Repository) SearchAvailability(w http.ResponseWriter, r *http.Request)
 
 // ContactUs is the contact-us page handler
 func (rp *Repository) ContactUs(w http.ResponseWriter, r *http.Request) {
-	render.RenderTemplate(w, r, "contact-us.page.gtpl", &models.TemplateData{})
+	render.Template(w, r, "contact-us.page.gtpl", &models.TemplateData{})
 }
 
 // ReservationSummary is the reservation-summary page handler
@@ -86,9 +91,9 @@ func (rp *Repository) ReservationSummary(w http.ResponseWriter, r *http.Request)
 		http.Redirect(w, r, "/make-reservation", http.StatusTemporaryRedirect)
 		return
 	}
-	render.RenderTemplate(w, r, "reservation-summary.page.gtpl", &models.TemplateData{
+	render.Template(w, r, "reservation-summary.page.gtpl", &models.TemplateData{
 		Data: map[string]interface{}{
-			"roomType":  reservation.RoomType,
+			"roomType":  reservation.Room.RoomName,
 			"startDate": reservation.StartDate,
 			"endDate":   reservation.EndDate,
 			"firstName": reservation.FirstName,

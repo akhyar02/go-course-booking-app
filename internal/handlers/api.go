@@ -6,37 +6,70 @@ import (
 	"log"
 	"net/http"
 	"net/mail"
+	"strconv"
 	"strings"
 	"time"
 
 	"github.com/akhyar02/bookings/internal/config"
+	"github.com/akhyar02/bookings/internal/driver"
 	"github.com/akhyar02/bookings/internal/helpers"
 	"github.com/akhyar02/bookings/internal/models"
+	"github.com/akhyar02/bookings/internal/repository"
+	"github.com/akhyar02/bookings/internal/repository/dbrepo"
 )
 
 type reservationApiHandler struct {
 	appConfig config.AppConfig
+	db        repository.DatabaseRepo
 }
 
 var ReservationApi *reservationApiHandler
 
-func NewReservationHandler(appConfig config.AppConfig) {
+func NewReservationHandler(appConfig config.AppConfig, db *driver.DB) {
 	ReservationApi = &reservationApiHandler{
 		appConfig: appConfig,
+		db:        dbrepo.NewPostgresRepo(db.SQL, &appConfig),
 	}
 }
 
 func (h *reservationApiHandler) GetReservationByDate(w http.ResponseWriter, r *http.Request) {
 	var UrlQueries = r.URL.Query()
 	var (
-		startDate = UrlQueries.Get("startDate")
-		endDate   = UrlQueries.Get("endDate")
+		startDateParam = UrlQueries.Get("startDate")
+		endDateParam   = UrlQueries.Get("endDate")
+		roomIdParam    = UrlQueries.Get("roomId")
 	)
+
+	roomId, err := strconv.Atoi(roomIdParam)
+	if err != nil {
+		helpers.ClientError(w, http.StatusBadRequest)
+		return
+	}
+	startDate, err := time.Parse("2006-01-02", startDateParam)
+	if err != nil {
+		helpers.ClientError(w, http.StatusBadRequest)
+		return
+	}
+	endDate, err := time.Parse("2006-01-02", endDateParam)
+	if err != nil {
+		helpers.ClientError(w, http.StatusBadRequest)
+		return
+	}
+	isAvailable, err := h.db.SearchAvailibilityByDatesAndRoomId(startDate, endDate, roomId)
+	if err != nil {
+		helpers.ServerError(w, err)
+		return
+	}
+	if !isAvailable {
+		helpers.ClientError(w, http.StatusConflict)
+		return
+	}
+
 	jsonResponse, _ := json.Marshal(struct {
-		RoomId    int    `json:"roomId"`
-		RoomType  string `json:"roomType"`
-		StartDate string `json:"startDate"`
-		EndDate   string `json:"endDate"`
+		RoomId    int       `json:"roomId"`
+		RoomType  string    `json:"roomType"`
+		StartDate time.Time `json:"startDate"`
+		EndDate   time.Time `json:"endDate"`
 	}{
 		RoomId:    1,
 		RoomType:  "general_quarters",
@@ -53,6 +86,7 @@ func (h *reservationApiHandler) CreateReservation(w http.ResponseWriter, r *http
 		LastName  string `json:"last_name"`
 		Email     string `json:"email"`
 		Phone     string `json:"phone"`
+		RoomId    string `json:"room_id"`
 		RoomType  string `json:"room_type"`
 		StartDate string `json:"start_date"`
 		EndDate   string `json:"end_date"`
@@ -77,6 +111,7 @@ func (h *reservationApiHandler) CreateReservation(w http.ResponseWriter, r *http
 
 	var startDate time.Time
 	var endDate time.Time
+	var roomId int
 	if requestBody.StartDate == "" {
 		errors["start_date"] = append(errors["start_date"], "start date is required")
 	} else {
@@ -115,11 +150,13 @@ func (h *reservationApiHandler) CreateReservation(w http.ResponseWriter, r *http
 	if requestBody.Phone == "" {
 		errors["phone"] = append(errors["phone"], "phone is required")
 	}
-
-	if len(errors) > 0 {
-		w.WriteHeader(http.StatusBadRequest)
+	if requestBody.RoomId == "" {
+		errors["room_type"] = append(errors["room_type"], "room id is required")
 	} else {
-		w.WriteHeader(http.StatusCreated)
+		roomId, err = strconv.Atoi(requestBody.RoomId)
+		if err != nil {
+			errors["room_type"] = append(errors["room_type"], "room id must be a number")
+		}
 	}
 
 	reservation := models.Reservation{
@@ -127,10 +164,49 @@ func (h *reservationApiHandler) CreateReservation(w http.ResponseWriter, r *http
 		LastName:  requestBody.LastName,
 		Email:     requestBody.Email,
 		Phone:     requestBody.Phone,
-		RoomID:    1,
-		RoomType:  requestBody.RoomType,
-		StartDate: requestBody.StartDate,
-		EndDate:   requestBody.EndDate,
+		RoomId:    roomId,
+		Room: models.Room{
+			RoomName: requestBody.RoomType,
+		},
+		StartDate: startDate,
+		EndDate:   endDate,
+	}
+
+	if len(errors) > 0 {
+		w.WriteHeader(http.StatusBadRequest)
+	} else {
+		isRoomAvailable, err := h.db.SearchAvailibilityByDatesAndRoomId(startDate, endDate, roomId)
+		if err != nil {
+			log.Println(err)
+			helpers.ServerError(w, err)
+		}
+		if !isRoomAvailable {
+			w.WriteHeader(http.StatusConflict)
+			return
+		}
+
+		w.WriteHeader(http.StatusCreated)
+		reservationId, err := h.db.InsertReservation(reservation)
+		if err != nil {
+			log.Println(err)
+			helpers.ServerError(w, err)
+			return
+		}
+
+		roomRestriction := models.RoomRestriction{
+			StartDate:     startDate,
+			EndDate:       endDate,
+			RoomId:        roomId,
+			ReservationId: reservationId,
+			RestrictionId: 1,
+		}
+
+		err = h.db.InsertRoomRestriction(roomRestriction)
+		if err != nil {
+			log.Println(err)
+			helpers.ServerError(w, err)
+			return
+		}
 	}
 
 	var responseData = struct {

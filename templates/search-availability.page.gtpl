@@ -107,7 +107,7 @@ async function checkAvailability(url = "", data = {}) {
   //   error: false,
   //   message: "Success",
   // }
-  const query = `?startDate=${data.startDate}&endDate=${data.endDate}`
+  const query = `?startDate=${data.startDate}&endDate=${data.endDate}&roomId=${data.roomId}`
   const response = await fetch(url+query, {
     method: "GET",
     headers: {
@@ -144,10 +144,21 @@ async function handleSubmit(e){
     }, 5000);
     return;
   }
+  
+  let roomId 
+  switch (roomTypeInput.value.toLowerCase()) {
+    case 'generalquarters':
+      roomId = 1
+      break
+    case 'majorsuites':
+      roomId = 2
+      break
+  }
 
   const responseData = await checkAvailability("/api/reservations", {
     startDate: startDateInput.value,
     endDate: endDateInput.value,
+    roomId: roomId
   });
   if (responseData.error) {
     Swal.fire({

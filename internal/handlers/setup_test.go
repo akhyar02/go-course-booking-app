@@ -9,6 +9,7 @@ import (
 	"time"
 
 	"github.com/akhyar02/bookings/internal/config"
+	"github.com/akhyar02/bookings/internal/driver"
 	"github.com/akhyar02/bookings/internal/helpers"
 	"github.com/akhyar02/bookings/internal/models"
 	"github.com/akhyar02/bookings/internal/render"
@@ -44,17 +45,23 @@ func getRoutes() http.Handler {
 	session.Cookie.Path = "/"
 	app.Session = session
 
+	db, err := driver.ConnectSQL("host=127.0.0.1 port=5432 dbname=booking user=postgres password=postgres")
+	if err != nil {
+		log.Fatal("Error connecting to database")
+	}
+	defer db.SQL.Close()
+
 	tc, err := render.CreateTemplateCache()
 	if err != nil {
 		log.Fatal("Error creating template cache:", err)
 	}
 	app.TemplateCache = tc
 	config.TestConf.TemplateCache = tc
-	repo := NewRepository(&app)
+	repo := NewRepository(&app, db)
 	helpers.NewHelpers(&app)
 	NewHandlers(repo)
-	NewReservationHandler(app)
-	render.NewTemplates(&app)
+	NewReservationHandler(app, db)
+	render.NewRenderer(&app)
 
 	// ? pat
 	// mux := pat.New()

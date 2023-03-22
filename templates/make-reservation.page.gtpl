@@ -135,7 +135,15 @@
                   return
                 }
                 const formData = new FormData(form);
-                delete formData["csrf_token"]
+                console.log(formData.get('room_type'))
+                switch (formData.get('room_type').toLowerCase()) {
+                  case "general quarters":
+                    formData.set("room_id", "1")
+                    break
+                  case "major suites":
+                    formData.set("room_id", "2")
+                    break
+                }
                 const response = await fetch("/api/reservations", {
                   method: "POST",
                   headers:{
