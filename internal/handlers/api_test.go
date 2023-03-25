@@ -15,6 +15,7 @@ type reservationRequestBody struct {
 	Email     string `json:"email"`
 	Phone     string `json:"phone"`
 	RoomType  string `json:"room_type"`
+	RoomId    string `json:"room_id"`
 	StartDate string `json:"start_date"`
 	EndDate   string `json:"end_date"`
 }
@@ -25,8 +26,9 @@ var validReservationParams = reservationRequestBody{
 	"johnD@mail.com",
 	"123456789",
 	"general quarters",
-	"2022-03-03",
-	"2022-03-04",
+	"1",
+	"2025-03-03",
+	"2025-03-04",
 }
 
 var apiTests = []struct {
@@ -37,7 +39,7 @@ var apiTests = []struct {
 	expectedStatusCode int
 }{
 	{
-		"Get reservation by date", "/api/reservations?startDate=2022-3-3&endDate=2022-3-4", "GET", nil, http.StatusOK,
+		"Get reservation by date", "/api/reservations?startDate=2023-03-03&endDate=2023-03-04&roomId=1", "GET", nil, http.StatusOK,
 	},
 	{
 		"Create reservation", "/api/reservations", "POST", validReservationParams, http.StatusCreated,
@@ -52,6 +54,7 @@ var apiTests = []struct {
 			Email:     validReservationParams.Email,
 			Phone:     validReservationParams.Phone,
 			RoomType:  validReservationParams.RoomType,
+			RoomId:    validReservationParams.RoomId,
 			StartDate: "2022-3-3",
 			EndDate:   "2022-3-2",
 		},
@@ -68,6 +71,7 @@ var apiTests = []struct {
 			Phone:     validReservationParams.Phone,
 			RoomType:  validReservationParams.RoomType,
 			StartDate: validReservationParams.StartDate,
+			RoomId:    validReservationParams.RoomId,
 			EndDate:   validReservationParams.EndDate,
 		},
 		http.StatusBadRequest,
@@ -81,6 +85,7 @@ var apiTests = []struct {
 			LastName:  validReservationParams.LastName,
 			Email:     validReservationParams.Email,
 			Phone:     "",
+			RoomId:    validReservationParams.RoomId,
 			RoomType:  validReservationParams.RoomType,
 			StartDate: validReservationParams.StartDate,
 			EndDate:   validReservationParams.EndDate,

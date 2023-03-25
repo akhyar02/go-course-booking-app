@@ -22,8 +22,10 @@ import (
 
 var app config.AppConfig
 var session *scs.SessionManager
+var db *driver.DB
 
 func TestMain(m *testing.M) {
+	defer db.SQL.Close()
 	os.Exit(m.Run())
 }
 
@@ -45,11 +47,12 @@ func getRoutes() http.Handler {
 	session.Cookie.Path = "/"
 	app.Session = session
 
-	db, err := driver.ConnectSQL("host=127.0.0.1 port=5432 dbname=booking user=postgres password=postgres")
+	var err error
+	db, err = driver.ConnectSQL("host=127.0.0.1 port=5432 dbname=booking user=postgres password=postgres")
 	if err != nil {
 		log.Fatal("Error connecting to database")
 	}
-	defer db.SQL.Close()
+	// defer db.SQL.Close()
 
 	tc, err := render.CreateTemplateCache()
 	if err != nil {
