@@ -46,6 +46,10 @@ func main() {
 	session.Cookie.Path = "/"
 	app.Session = session
 
+	app.MailChan = make(chan models.MailData)
+	defer close(app.MailChan)
+	listenForMail()
+
 	dbName := flag.String("DB_NAME", "", "database name")
 	dbUser := flag.String("DB_USER", "", "database user")
 	dbPassowrd := flag.String("DB_PASSWORD", "", "database password")

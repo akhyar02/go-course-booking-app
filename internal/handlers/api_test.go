@@ -101,6 +101,12 @@ func TestGetReservationByDate(t *testing.T) {
 	defer ts.Close()
 
 	for _, test := range apiTests {
+		if db.SQL != nil {
+			_, err := db.SQL.Exec("delete from room_restrictions")
+			if err != nil {
+				t.Fatal("Error deleting from room_restrictions:", err)
+			}
+		}
 		var response *http.Response
 		var err error
 		switch test.method {

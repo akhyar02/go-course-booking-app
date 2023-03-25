@@ -18,6 +18,7 @@ import (
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
 	"github.com/justinas/nosurf"
+	"gopkg.in/gomail.v2"
 )
 
 var app config.AppConfig
@@ -25,7 +26,12 @@ var session *scs.SessionManager
 var db *driver.DB
 
 func TestMain(m *testing.M) {
-	defer db.SQL.Close()
+	defer func() {
+		if db.SQL != nil {
+			db.SQL.Close()
+		}
+		close(app.MailChan)
+	}()
 	os.Exit(m.Run())
 }
 
@@ -46,6 +52,9 @@ func getRoutes() http.Handler {
 	session.Cookie.Secure = app.InProduction
 	session.Cookie.Path = "/"
 	app.Session = session
+
+	app.MailChan = make(chan models.MailData)
+	listenForMail()
 
 	var err error
 	db, err = driver.ConnectSQL("host=127.0.0.1 port=5432 dbname=booking user=postgres password=postgres")
@@ -114,4 +123,53 @@ func noSurf(next http.Handler) http.Handler {
 
 func sessionLoad(next http.Handler) http.Handler {
 	return session.LoadAndSave(next)
+}
+
+func listenForMail() {
+	go func() {
+		server := gomail.NewDialer("localhost", 587, "", "")
+		var s gomail.SendCloser
+		open := false
+		for {
+			select {
+			case m, ok := <-app.MailChan:
+				if !ok {
+					return
+				}
+				sendMail(m, server, &s, &open)
+			case <-time.After(30 * time.Second):
+				if !open {
+					continue
+				}
+				s.Close()
+				open = false
+			}
+		}
+	}()
+}
+
+func sendMail(m models.MailData, server *gomail.Dialer, s *gomail.SendCloser, open *bool) {
+	msg := gomail.NewMessage()
+	msg.SetHeader("From", m.From)
+	msg.SetHeader("To", m.To...)
+	msg.SetHeader("Subject", m.Subject)
+	msg.SetBody("text/html", string(m.Content))
+
+	if !*open {
+		var err error
+		*s, err = server.Dial()
+		if err != nil {
+			log.Println(err)
+			return
+		} else {
+			*open = true
+		}
+	}
+
+	if err := gomail.Send(*s, msg); err != nil {
+		log.Println(err)
+	} else {
+		log.Println("Email sent")
+	}
+
 }

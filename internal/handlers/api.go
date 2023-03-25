@@ -66,15 +66,15 @@ func (h *reservationApiHandler) GetReservationByDate(w http.ResponseWriter, r *h
 	}
 
 	jsonResponse, _ := json.Marshal(struct {
-		RoomId    int       `json:"roomId"`
-		RoomType  string    `json:"roomType"`
-		StartDate time.Time `json:"startDate"`
-		EndDate   time.Time `json:"endDate"`
+		RoomId    int    `json:"roomId"`
+		RoomType  string `json:"roomType"`
+		StartDate string `json:"startDate"`
+		EndDate   string `json:"endDate"`
 	}{
 		RoomId:    1,
 		RoomType:  "general_quarters",
-		StartDate: startDate,
-		EndDate:   endDate,
+		StartDate: startDateParam,
+		EndDate:   endDateParam,
 	})
 	fmt.Fprint(w, string(jsonResponse))
 }
@@ -206,6 +206,20 @@ func (h *reservationApiHandler) CreateReservation(w http.ResponseWriter, r *http
 			log.Println(err)
 			helpers.ServerError(w, err)
 			return
+		}
+
+		h.appConfig.MailChan <- models.MailData{
+			To:      []string{reservation.Email},
+			From:    "xyzbooking@xyz.com",
+			Subject: "Reservation Confirmation",
+			Content: `<strong>Reservation Confirmation</strong><br/>
+			Thank you for your reservation. We look forward to seeing you.`,
+		}
+		h.appConfig.MailChan <- models.MailData{
+			To:      []string{"admin@xyz.com"},
+			From:    "xyzbooking@xyz.com",
+			Subject: "Room Reservation",
+			Content: `<strong>Room is reserved</strong><br/>`,
 		}
 	}
 

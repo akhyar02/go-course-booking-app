@@ -43,7 +43,7 @@ func newDatabase(dsn string) (*sql.DB, error) {
 		return nil, err
 	}
 
-	if db.Ping() != nil {
+	if err = db.Ping(); err != nil {
 		return nil, err
 	}
 
